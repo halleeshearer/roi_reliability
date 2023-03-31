@@ -114,4 +114,4 @@ def permutations(num):
    
   
 # permutations(num) where num is the number of permutations to compute
-permutations(1000)
+permutations(5000)

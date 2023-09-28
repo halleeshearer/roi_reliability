@@ -3,8 +3,7 @@ import multiprocessing as mp
 import os
 
 repoDir = os.path.dirname(os.path.abspath(__file__))
-#subject_list_small = [105923, 104416]
-subject_list_n111 = pd.read_csv('/arc/project/st-tv01-1/hcp/targets/m2m4_sub_n111.csv', header = None).squeeze()
+subject_list_n109 = pd.read_csv('/arc/project/st-tv01-1/hcp/targets/m2m4_sub_n109.csv', header = None).squeeze()
 dataDir='/arc/project/st-tv01-1/hcp/data-clean'
 saveDir='/scratch/st-tv01-1/hcp/targets'
 # load Schaefer parcellation, remove medial wall

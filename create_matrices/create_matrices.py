@@ -19,25 +19,26 @@ from nilearn import plotting
 from nilearn.image import mean_img
 import os
 
-
-# load Schaefer parcellation, remove medial wall
-#schaefer = nb.cifti2.load('/home/hallee/project/atlas/schaefer2018/Schaefer2018_1000Parcels_7Networks_order.dscalar.nii').get_fdata().squeeze()
-#medial = nb.cifti2.load('/home/hallee/project/atlas/HCP_S1200/Human.MedialWall_Conte69.32k_fs_LR.dlabel.nii').get_fdata().squeeze()
-#schaefer = schaefer[medial == 0]
-
-
-# load my ROIs...
-
-#dlpfc = nb.load('/home/hallee/hallee/ROIs/dlpfc.dscalar.nii')
-#pre_sma = nb.load('/home/hallee/hallee/ROIs/pre-sma.dscalar.nii')
-#tpj = nb.load('/home/hallee/hallee/ROIs/tpj.dscalar.nii')
-
-
+# set directories
+dataDir = '/home/hallee/project/hcp/data-clean'
+atlasDir = '/home/hallee/project/atlas'
+roiDir = '/home/hallee/project/hallee'
 repoDir = os.path.dirname(os.path.abspath(__file__))
 
-# load data
+# load Schaefer parcellation, remove medial wall
+schaefer = nb.cifti2.load(f'{atlasDir}/schaefer2018/Schaefer2018_1000Parcels_7Networks_order.dscalar.nii').get_fdata().squeeze()
+medial = nb.cifti2.load(f'{atlasDir}/HCP_S1200/Human.MedialWall_Conte69.32k_fs_LR.dlabel.nii').get_fdata().squeeze()
+schaefer = schaefer[medial == 0]
 
-def load_file(subject, condition, dataDir='/home/hallee/project/hcp/data-clean'):
+
+# load ROIs...
+dlpfc = nb.load(f'{roiDir}/dlpfc.dscalar.nii')
+pre_sma = nb.load(f'{roiDir}/pre-sma.dscalar.nii')
+tpj = nb.load(f'{roiDir}/tpj.dscalar.nii')
+
+
+# load data from a given subject and condition
+def load_file(subject, condition, dataDir= dataDir):
     # file is the path in '' to the .dtseries.nii file to be loaded
     # returns a numpy array of grayordinates by timepoints
     # condition is one of REST1, REST4, MOVIE2, MOVIE4
@@ -57,9 +58,7 @@ def load_file(subject, condition, dataDir='/home/hallee/project/hcp/data-clean')
     return X[:, hcp.struct.cortex]
 
 
-
 # extract ROI timeseries
-
 def roi_tc(roi, image):
     roi_for_mask = roi.get_fdata().squeeze().astype(int) # make mask into np array of 1 or 0
     Xn_for_mask = image[:, hcp.struct.cortex] # select cortex from Xn
@@ -67,15 +66,9 @@ def roi_tc(roi, image):
     return roi
 
 
-
-
-# parcellation to timeseries compatible with schaeffer
-# return # of parcels x time np array
-
-# *IMPORTANT* need to use cortex cifti data for this to run... in the example, I used Xcortex as cifti
-
+# parcellate the whole brain 
 def parcellate(parcellation, cifti):
-    # assume parcellation and cifti are both arrays
+    # parcellation and cifti are both arrays
     # loop over each parcel, get the average in the cifti
     num_of_parcels = np.unique(parcellation) 
     num_of_parcels = num_of_parcels[num_of_parcels != 0].astype(int)
@@ -87,21 +80,9 @@ def parcellate(parcellation, cifti):
 
 
 
-# compute the overlap between parcellation and an ROI
-# inputs: parcellation, roi, optional threshold (what proportion of the voxels in a parcel need to overlap to exclude)
-# return: the indices that we want to keep (without overlap)
-
-# def overlap(parcellation, roi, thresh=0):
-#     num_of_parcels = np.unique(parcellation) 
-#     num_of_parcels = num_of_parcels[num_of_parcels != 0].astype(int)
-#     proportion = np.empty(max(num_of_parcels))
-#     roi = roi.get_fdata().squeeze()
-#     for parcel in num_of_parcels:
-#         idx = parcellation == parcel
-#         proportion[parcel-1] = roi[idx].mean()
-#     return proportion <= thresh
-
-
+# compute the overlap between parcels and an ROI
+# thresh is what proportion of voxels in a parcel need to overlap to exclude
+# returns the indices of parcels to keep (parcels without overlap above the threshold)
 def overlap(parcellation, roi, thresh=0):
     num_of_parcels = np.unique(parcellation) 
     num_of_parcels = num_of_parcels[num_of_parcels != 0].astype(int)
@@ -114,17 +95,17 @@ def overlap(parcellation, roi, thresh=0):
     return proportion <= thresh
 
 
-# filter the parcellation to remove parcels with overlap from overlap() function
-# input: list of parcels to include, np array of time by parcels
+# filter the parcellated data to remove parcels with overlap 
+# input: list of parcels to include, np array of time x parcels
 def filter_parcellation(parcels, array):
     output = array[:, parcels == True]
     return output
 
 
 
-# produces the path (str) to the correct index file in sockeye for filtering the timecourse
+# produce the path (str) to the correct index file in sockeye for filtering the timecourses to remove
+# chunks of rest from movie runs, and corresponding chunks from rest runs
 # rest1 and movie2 should be indexed by movie2_vols, rest4 and movie4 should be indexed by movie4_vols
-
 def index_path(condition):
     if condition == 'REST1' or condition == 'MOVIE2':
         path = os.path.join(repoDir, 'data/movie2_vols.csv')
@@ -133,9 +114,7 @@ def index_path(condition):
     return path
 
 
-
 # filters an np array of grayordinates x time with an index where 1 means to keep the volume, and 0 discard
-
 def filter_tc(index, array): # takes an index of which volumes to cut out and an np array of grayordinates x time
     idx = pd.read_csv(index, header = None).values.squeeze() # import the index file from csv as a list
     len_idx = len(idx) # find the length of the index
@@ -148,10 +127,7 @@ def filter_tc(index, array): # takes an index of which volumes to cut out and an
     return out # return the output as the indexed array
 
 
-
-
-# takes an ROI timecourse and parcellated brain timecourse and returns a matrix and an image
-
+# takes ROI timecourses and parcellated brain timecourses and returns a correlation matrix and a visualization
 def timecourse_to_matrix(roi_tc, parcel_tc): 
     # roi_tc and parcel_tc should have the form of a numpy array with grayodinate x time dimensions
     corr_matrix = np.zeros((roi_tc.shape[1], parcel_tc.shape[1])) # makes empty array to fill with dims roi x parcels
@@ -164,7 +140,6 @@ def timecourse_to_matrix(roi_tc, parcel_tc):
 
 
 # takes an ROI timecourse and parcellated brain timecourse and returns a matrix
-
 def get_corr_matrix(roi_tc, parcel_tc): 
     # roi_tc and parcel_tc should have the form of a numpy array with grayodinate x time dimensions
     corr_matrix = np.zeros((roi_tc.shape[1], parcel_tc.shape[1])) # makes empty array to fill with dims roi x parcels
@@ -174,19 +149,8 @@ def get_corr_matrix(roi_tc, parcel_tc):
     return corr_matrix
 
 
-
-
-def create_matrix_plot(subject, condition, roi, parcellation, threshold):
-    cortex = load_file(subject, condition)
-    index = index_path(condition)
-    cortex = filter_tc(index, cortex)
-    roi_time = roi_tc(roi, cortex)
-    brain_parcellated = parcellate(parcellation, cortex)
-    overlapping = overlap(parcellation, roi, threshold)
-    parcel_tc = filter_parcellation(overlapping, brain_parcellated)
-    matrix = timecourse_to_matrix(roi_time, parcel_tc)
-
-
+# create a correlation matrix for a given subject, condition, and roi
+# threshold refers to the threshold for the overlap() function, see above
 def create_matrix_array(subject, condition, roi, parcellation, threshold, dataDir):
     cortex = load_file(subject, condition, dataDir)
     index = index_path(condition)
@@ -199,7 +163,7 @@ def create_matrix_array(subject, condition, roi, parcellation, threshold, dataDi
     return matrix
 
 
-# the giant function that will loop through subjects, conditions, and ROIs:
+# loop through subjects, conditions, and ROIs to create all correlation matrices for further analysis:
 roi_list = {'dlpfc': os.path.join(repoDir,'data','dlpfc.dscalar.nii'), 'tpj':os.path.join(repoDir,'data','tpj.dscalar.nii'), 'pre_sma': os.path.join(repoDir,'data','pre-sma.dscalar.nii')}
 def get_all_matrices(subject, parcellation, dataDir='/home/hallee/project/hcp/data-clean', saveDir='/home/hallee/scratch/hcp/targets', roi_list=roi_list, threshold=0):
     condition_list = ['REST1','REST4', 'MOVIE2',  'MOVIE4'] # 4 conditions
@@ -210,10 +174,3 @@ def get_all_matrices(subject, parcellation, dataDir='/home/hallee/project/hcp/da
             np.savetxt(f'{saveDir}/sub{subject}_{c}_{r}.csv', output, delimiter = ',')
             print(subject)
 
-            
-
-# run get_all_matrices() with parallel processing!
-
-#pool = mp.Pool(mp.cpu_count())
-#results = pool.map(get_all_matrices, subject_list_n111)
-#pool.close()

@@ -12,9 +12,9 @@ i2c2_all <- function() {
         for(cond in conds) {
             y <- fread(sprintf("/home/hallee/scratch/hcp/targets/i2c2/rearranged_%s_%s_109.csv", roi, cond))
             # compute I2C2:
-            y.lambda <- I2C2(y, I=111, J=2, twoway=FALSE, demean=FALSE)
+            y.lambda <- I2C2(y, I=109, J=2, twoway=FALSE, demean=FALSE)
             # compute the 95% CI of I2C2:
-            y.ci <- I2C2.mcCI(y, I=111, J=2, rseed=1, ncores=1, R = 200, demean=FALSE, ci=0.95) # change R to change # of bootstrap samples
+            y.ci <- I2C2.mcCI(y, I=109, J=2, rseed=1, ncores=1, R = 200, demean=FALSE, ci=0.95) # change R to change # of bootstrap samples
             output <- data.frame(condition = cond, roi = roi, lambda = y.lambda$lambda, CI_low = y.ci$CI[1], CI_high = y.ci$CI[2], row.names = NULL)
             result <- rbind(result, output)
         }

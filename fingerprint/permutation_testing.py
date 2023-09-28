@@ -17,14 +17,19 @@ conditions_all = ['REST1', 'REST4', 'MOVIE2', 'MOVIE4']
 conditions = ['REST','MOVIE']
 rois = ['dlpfc', 'tpj', 'pre_sma']
 
-def load_matrix(subject, condition, roi, targetDir='/home/hallee/scratch/hcp/targets'):
+# set directories:
+targetDir = '/home/hallee/scratch/hcp/targets'
+ourDir = '/home/hallee/scratch/hcp/targets/fingerprint_permutations'
+
+
+def load_matrix(subject, condition, roi, targetDir= targetDir):
     output = pd.read_csv(f'{targetDir}/sub{subject}_{condition}_{roi}.csv', sep=',', header=None)
     return output
   
-# Function #1: 
-# create a df with cols: sub1, correct, cond, roi
+# this is all unidirectional, repeat for the reverse direction after!
 
-def match(dataDir = '/home/hallee/scratch/hcp/targets'):
+# function #1: create a df with cols: sub1, correct (binary true or false), cond, roi
+def match(dataDir = targetDir):
     # create an empty df with cols sub1, correct, cond, roi
     df = pd.read_csv(f'{dataDir}/fingerprint_df.csv', sep=',', header = 0)
     results = pd.DataFrame(columns = ['sub1', 'correct', 'cond', 'roi'])
@@ -44,7 +49,7 @@ def match(dataDir = '/home/hallee/scratch/hcp/targets'):
  
 
 # function #2: shuffle the condition column from the match() result
-def shuffle(p, match, dataDir='/home/hallee/scratch/hcp/targets'):
+def shuffle(p, match, dataDir= targetDir):
     results = pd.DataFrame(columns = ['sub1', 'correct', 'cond', 'roi'])
     df = pd.read_csv(f'{dataDir}/fingerprint_df.csv', sep=',', header = 0)
     for roi in rois:
@@ -98,7 +103,7 @@ def movie_rest_perm(perms):
   
   
  # function that takes results from movie_res_perm() and exports the distribution as a csv for each roi
-def export_distributions(results, num, outDir='/home/hallee/scratch/hcp/targets/fingerprint_permutations'):
+def export_distributions(results, num, outDir= ourDir):
     for roi in rois:
         df = results[results['roi']==roi]
         dist = df['movie-rest']

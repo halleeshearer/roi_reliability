@@ -87,7 +87,7 @@ def create_matrices(sub):
         filtered_vertex_ts = filter_tc(index_path(cond), ts)
 
         # loop through all of the regions in the Glasser atlas
-        for roi in range(1,hcp.mmp.ids.shape[0]):
+        for roi in range(1,hcp.mmp.ids.shape[0]): ## TODO: Fix this line to be range(1, hcp.mmp.ids.shape[0]+1) to get roi 380 too! IF we want subcort
             # create a logical vector that is True for vertices in this roi
             roi_idx = hcp.mmp.map_all == roi
             # keep those vertices in this roi

@@ -39,3 +39,5 @@ for (p in 1:n_perms) {
     }
   }
 
+# export results
+write.csv(results, file='/scratch/st-tv01-1/hcp/reliability/permutations/whole_brain_mv_permutations.csv')

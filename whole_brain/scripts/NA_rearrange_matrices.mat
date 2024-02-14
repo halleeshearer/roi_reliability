@@ -1,0 +1,60 @@
+subject_list_n109 = readtable('/home/hallee/project/hcp/targets/m2m4_sub_n109.csv', 'ReadVariableNames', false);
+subject_list_n109 = subject_list_n109.Var1;
+conditions = {'REST1', 'REST4', 'MOVIE2', 'MOVIE4'};
+num_subjects = numel(subject_list_n109);
+num_conditions = numel(conditions);
+
+% change the ROI here, then highlight all and run in interactive MATLAB on Sockeye!
+
+roi = 2
+
+fc_matrix = csvread(['/scratch/st-tv01-1/hcp/reliability/matrices/', num2str(subject_list_n109(1)), '/', conditions{1}, '/roi_', num2str(roi), '.csv']);
+num_fc_values = numel(fc_matrix);
+
+% Preallocate results as a cell array
+results = cell(num_subjects * num_conditions, 3 + numel(fc_matrix));
+
+for sub = 1:num_subjects
+    for cond = 1:num_conditions
+        % Read the FC matrix from CSV
+        fc_matrix = csvread(['/scratch/st-tv01-1/hcp/reliability/matrices/', num2str(subject_list_n109(sub)), '/', conditions{cond}, '/roi_', num2str(roi), '.csv']);
+        
+        % Determine the condition type (R or M) and number (1 or 2)
+        if strcmp(conditions{cond}, 'REST1') || strcmp(conditions{cond}, 'REST4')
+            condition_type = 'R';
+        else
+            condition_type = 'M';
+        end
+        if strcmp(conditions{cond}, 'REST1') || strcmp(conditions{cond}, 'MOVIE2')
+            condition_number = '1';
+        else
+            condition_number = '2';
+        end
+        
+        % Convert fc_matrix to a string
+        fc_matrix_str = num2cell(fc_matrix(:)');
+        
+        % Store the result in the results cell array
+        results{(sub - 1) * num_conditions + cond, 1} = num2str(subject_list_n109(sub));
+        results{(sub - 1) * num_conditions + cond, 2} = condition_type;
+        results{(sub - 1) * num_conditions + cond, 3} = condition_number;
+        results((sub - 1) * num_conditions + cond, 4:end) = fc_matrix_str;
+    end
+end
+
+% Create VariableNames for the table
+var_names = [{'Subject', 'Condition', 'Session'}];
+for i = 1:numel(fc_matrix)
+    var_names = [var_names, {['FC', num2str(i)]}];
+end
+
+% Convert the cell array to a table
+results_table = cell2table(results, 'VariableNames', var_names);
+
+% Write the table to a CSV file
+
+% !!! Change the name of the file!
+writetable(results_table, '/scratch/st-tv01-1/hcp/reliability/test_roi3_rearranged.csv');
+
+
+

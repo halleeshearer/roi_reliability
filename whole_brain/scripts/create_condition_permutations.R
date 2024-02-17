@@ -1,7 +1,7 @@
 # create condition vectors of R for Rest and M for Movie in chunks of 4 
 # either MMRR or RRMM for each subject
-n_perms <- 1000
-n_subs <- 109
+n_perms <- 5000
+n_sub <- 109
 
 # create results dataframe to save condition label vectors
 # each row is a vector of randomized condition labels (duplicated
@@ -30,4 +30,4 @@ for (p in 1:n_perms) {
 # save the results dataframes if wanted
 #write.csv(results, file = '/Users/neuroprism/Library/CloudStorage/GoogleDrive-halleeninet@gmail.com/My\ Drive/Vanderlab/ROI\ paper/roi_reliability/whole_brain/data/permuted_conditions.csv', row.names = FALSE)
 # for sockeye
-write.csv(results, file = '/home/hallee/scratch/hcp/reliability/permutations/permuted_condition_labels.csv', row.names = FALSE)
+write.csv(results, file = '/home/hallee/scratch/hcp/reliability/permutations/permuted_condition_labels_5000.csv', row.names = FALSE)

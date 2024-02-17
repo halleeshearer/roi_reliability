@@ -78,7 +78,7 @@ num_conditions = numel(conditions);
 
 % change the ROI here, then highlight all and run in interactive MATLAB on Sockeye!
 
-roi = 376
+roi = 366
 
 fc_matrix = csvread(['/scratch/st-tv01-1/hcp/reliability/matrices/', num2str(subject_list_n109(1)), '/', conditions{1}, '/roi_', num2str(roi), '.csv']);
 num_fc_values = numel(fc_matrix);

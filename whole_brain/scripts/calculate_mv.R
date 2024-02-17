@@ -58,11 +58,12 @@ conditions <- as.matrix(rep(c("R", "R", "M", "M"), 109))
 subID <- as.matrix(rep(1:109, each=2))
 session <- as.matrix(rep(1:2, 109))
 
-for (roi in 1:10) {
+for (roi in 366:379) {
     input_dist <- as.matrix(fread(paste0('/scratch/st-tv01-1/hcp/reliability/dist_mats/roi_', roi, '_dist.csv')))
 
     dist_m <- input_dist[conditions=="M", conditions=="M"]
     dist_r <- input_dist[conditions=="R", conditions=="R"]
+    print(roi)
 
     i2c2_m <- calc_i2c2(dist_m, subID, as.matrix(session))
     discr_m <- calc_discriminability(dist_m, subID)

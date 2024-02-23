@@ -10,7 +10,9 @@ matrix <- fread('/home/hallee/scratch/hcp/reliability/rearranged_matrices/rearra
 data <- matrix[,2:dim(matrix)[2]]
 
 # for each condition...
-conditions <- ["M", "R"]
+conditions <- c("M", "R")
+
+start.time <- Sys.time()
 
 for (cond in conditions) {
   this_cond <- data[data[[2]]==cond,]
@@ -23,3 +25,10 @@ for (cond in conditions) {
 
   # save results
   write.csv(df_icc, file = paste0('/home/hallee/scratch/hcp/reliability/', cond, '_whole-brain_ICC.csv'))
+}
+  
+  end.time <- Sys.time()
+  time.taken <- end.time - start.time
+  time.taken
+
+

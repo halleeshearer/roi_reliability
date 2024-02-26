@@ -1,5 +1,5 @@
-# # library(ReX)
-# # library(data.table)
+library(ReX)
+library(data.table)
 
 # # results <- data.frame(roi = numeric(), cond = character(), i2c2 = numeric(), discr = numeric(), finger = numeric())
 # # roi <- Sys.getenv("SLURM_ARRAY_TASK_ID")
@@ -49,6 +49,8 @@
 #     }
 #     write.csv(results, paste0('/scratch/st-tv01-1/hcp/reliability/results/roi_', roi, '_results.csv'), row.names=FALSE)
 # }
+
+
 
 
 # calculate multivariate reliability measures for each ROI for movie, rest and the difference between movie and rest (M minus R)

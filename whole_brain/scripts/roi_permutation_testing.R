@@ -59,22 +59,25 @@ library(data.table)
 
 
 roi <- Sys.getenv("SLURM_ARRAY_TASK_ID")
-n_perms <- 1000
+n_perms <- 5000
 
 results <- data.frame(permutation = numeric(), roi = numeric(), cond = character(), i2c2 = numeric(), discr = numeric(), finger = numeric())
 
 Dmax <- read.csv(paste0('/scratch/st-tv01-1/hcp/reliability/dist_mats/roi_', roi, '_dist.csv'), header = FALSE)
 
-permuted_conds <- fread('/home/hallee/scratch/hcp/reliability/permutations/permuted_condition_labels.csv')
+permuted_conds <- fread('/home/hallee/scratch/hcp/reliability/permutations/permuted_condition_labels_5000.csv')
 
 sub <- as.matrix(rep(1:109, each=2))
 
 session <- as.matrix(rep(1:2, 109))
 
 for (perm in 1:n_perms) { 
-
+    
     permuted_cond <- as.character(permuted_conds[perm,])
-
+    # print update of progress
+    if (perm %% 100 == 0) {
+        print(paste0("Permutation ", perm, " of ", n_perms, " for ROI ", roi))
+    }
     # index the Dmax with the condition of interest
     for (cond in c("M", "R")) {
         Dmax_filtered <- Dmax[permuted_cond==cond, permuted_cond==cond]
@@ -88,3 +91,27 @@ for (perm in 1:n_perms) {
 
 # save results
 write.csv(results, paste0('/home/hallee/scratch/hcp/reliability/results/permutation_tests/roi_', roi, '.csv'))
+
+
+
+# for each permutation, calculate the difference between movie and rest
+
+# create dataframe to store the results
+diff_results <- data.frame(permutation = numeric(), i2c2_diff = numeric(), discr_diff = numeric(), finger_diff = numeric())
+
+for (perm in 1:n_perms) {
+    # filter results by permutation
+    this_perm <- results[results$permutation == perm,]
+    # calculate the difference between movie and rest for each measure
+    diff_i2c2 <- this_perm[this_perm$cond == "M", "i2c2"] - this_perm[this_perm$cond == "R", "i2c2"]
+    diff_discr <- this_perm[this_perm$cond == "M", "discr"] - this_perm[this_perm$cond == "R", "discr"]
+    diff_finger <- this_perm[this_perm$cond == "M", "finger"] - this_perm[this_perm$cond == "R", "finger"]  
+    # add the differences to the diff_results dataframe
+    diff_result <- data.frame(permutation = perm, i2c2_diff = diff_i2c2, discr_diff = diff_discr, finger_diff = diff_finger)
+    diff_results <- rbind(diff_results, diff_result)
+}
+
+# save the difference results
+write.csv(diff_results, paste0('/home/hallee/scratch/hcp/reliability/results/permutation_tests/roi_', roi, '_diffs.csv'))
+
+

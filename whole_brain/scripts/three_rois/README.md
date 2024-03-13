@@ -11,4 +11,6 @@ Steps for three ROI analysis:
 3. icc_three_rois.m
 - takes the matlab rearranged matrix for each ROI and creates an ICC matrix (ICC for each edge)
 
-4. 
+4. create_dist_matrices.mat
+- takes the rearranged matrices from step 2 and creates distance matrices
+

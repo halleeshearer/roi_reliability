@@ -29,7 +29,7 @@ csvwrite(sprintf('/scratch/st-tv01-1/hcp/reliability/dist_mats/roi_%d_dist.csv',
 
 num_of_rois = 379
 
-for roi = 369-376
+for roi = 1-379
     % load the rearranged matrix as a table (because there are some strings and some numbers)
     m = readtable(sprintf('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/roi_%d.csv', roi));
 

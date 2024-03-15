@@ -41,7 +41,7 @@ writetable(results, append('/scratch/st-tv01-1/hcp/reliability/results/three_roi
 
 %%%% PERMUTATION TESTING
 %%%% PERMUTATIONS:
-roi = 'tpj';
+roi = 'dlpfc';
 mat = readmatrix(append('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_roi_', roi, '.csv'));
 observed_diffs = readtable(append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/icc_results_', roi, '.csv'));
 session = readmatrix('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_visit_roi_dlpfc.csv');
@@ -49,7 +49,7 @@ cond = readtable('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_
 cond = cond.Var1;
 cond = categorical(cond);
 
-nPerms = 500;
+nPerms = 100;
 [nRows, nEdges] = size(mat);
 %nEdges=20;
 %results = cell(nPerms,3);
@@ -64,7 +64,7 @@ all_results = zeros(nEdges, nPerms);
 tic
 parfor i = 1:nEdges %nEdges
     % display an update of progress
-    if mod(i, 100) == 0
+    if mod(i, 1000) == 0
         disp(i)
     end
     idx = 1;
@@ -91,6 +91,10 @@ parfor i = 1:nEdges %nEdges
     all_results(i,:) = this_edge_perms;
 end
 toc
+
+% parfor i = 1:10
+%     disp(i)
+% end
 
 writematrix(p_vals, append('/scratch/st-tv01-1/hcp/reliability/icc_p_vals_three_rois_', roi, '.csv'))
 

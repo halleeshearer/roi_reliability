@@ -1,5 +1,5 @@
 
-roi = 'pre_sma';
+roi = 'tpj';
 mat = readmatrix(append('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_roi_', roi, '.csv'));
 session = readmatrix('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_visit_roi_dlpfc.csv');
 cond = readtable('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_condition_roi_dlpfc.csv', 'ReadVariableNames', false);
@@ -41,7 +41,7 @@ writetable(results, append('/scratch/st-tv01-1/hcp/reliability/results/three_roi
 
 %%%% PERMUTATION TESTING
 %%%% PERMUTATIONS:
-roi = 'dlpfc';
+roi = 'tpj';
 mat = readmatrix(append('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_roi_', roi, '.csv'));
 observed_diffs = readtable(append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/icc_results_', roi, '.csv'));
 session = readmatrix('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_visit_roi_dlpfc.csv');
@@ -96,10 +96,10 @@ toc
 %     disp(i)
 % end
 
-writematrix(p_vals, append('/scratch/st-tv01-1/hcp/reliability/icc_p_vals_three_rois_', roi, '.csv'))
+writematrix(p_vals, append('/scratch/st-tv01-1/hcp/reliability/redo_icc_p_vals_three_rois_', roi, '.csv'))
 
 % save all_results as csv
-writematrix(all_results, append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/icc_perms_', roi, '.csv'));
+writematrix(all_results, append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/redo_icc_perms_', roi, '.csv'));
 
 % rewrite the above function looping through the permutations first, then the edges
 % this will allow us to parallelize the permutation testing

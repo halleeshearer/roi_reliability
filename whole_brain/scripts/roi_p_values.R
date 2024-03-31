@@ -54,9 +54,26 @@ for (r in 1:379) {
     discr_obs <- obs %>% filter(roi == r) %>% select(discr_diff)
     finger_obs <- obs %>% filter(roi == r) %>% select(finger_diff)
 
-    i2c2_p <- sum(abs(i2c2_diff_perms) > abs(i2c2_obs[['i2c2_diff']])) / length(i2c2_diff_perms)
-    discr_p <- sum(abs(discr_diff_perms) > abs(discr_obs[['discr_diff']])) / length(discr_diff_perms)
-    finger_p <- sum(abs(finger_diff_perms) > abs(finger_obs[['finger_diff']])) / length(finger_diff_perms)
+    # need to add a catch for when the difference between movie and rest is 0 and also all perm diffs are 0
+    # otherwise that will be a p value of 0, even though there is not diff bw conditions
+    if (i2c2_obs[['i2c2_diff']] == 0) {
+        i2c2_p <- 1
+    } else {
+        i2c2_p <- sum(abs(i2c2_diff_perms) > abs(i2c2_obs[['i2c2_diff']])) / length(i2c2_diff_perms)
+    }
+    if (discr_obs[['discr_diff']] == 0) {
+        discr_p <- 1
+    } else {
+        discr_p <- sum(abs(discr_diff_perms) > abs(discr_obs[['discr_diff']])) / length(discr_diff_perms)
+    }
+    if (finger_obs[['finger_diff']] == 0) {
+        finger_p <- 1
+    } else {
+        finger_p <- sum(abs(finger_diff_perms) > abs(finger_obs[['finger_diff']])) / length(finger_diff_perms)
+    }
+    # i2c2_p <- sum(abs(i2c2_diff_perms) > abs(i2c2_obs[['i2c2_diff']])) / length(i2c2_diff_perms)
+    # discr_p <- sum(abs(discr_diff_perms) > abs(discr_obs[['discr_diff']])) / length(discr_diff_perms)
+    # finger_p <- sum(abs(finger_diff_perms) > abs(finger_obs[['finger_diff']])) / length(finger_diff_perms)
 
     new_row <- data.frame(roi = r, i2c2_p = i2c2_p, discr_p = discr_p, finger_p = finger_p)
     results <- rbind(results, new_row)
@@ -92,7 +109,7 @@ corrected_p_fdr_i2c2_all <- corrected_p_fdr_all[1:379]
 corrected_p_fdr_discr_all <- corrected_p_fdr_all[380:758]
 corrected_p_fdr_finger_all <- corrected_p_fdr_all[759:1137]
 
-# create an index for the significant p-values (fdr corrected) where 1 is M>R and 2 is M<R
+# create an index for the significant p-values (fdr corrected) where 1 is M>R and -1 is M<R
 directional_sig_p_i2c2_all <- data.frame(roi = results$roi, p = corrected_p_fdr_i2c2_all, m_better = ifelse(corrected_p_fdr_i2c2_all < 0.05, ifelse(obs$i2c2_diff > 0, 1, -1), 0))
 directional_sig_p_finger_all <- data.frame(roi = results$roi, p = corrected_p_fdr_finger_all, m_better = ifelse(corrected_p_fdr_finger_all < 0.05, ifelse(obs$finger_diff > 0, 1, -1), 0))
 directional_sig_p_discr_all <- data.frame(roi = results$roi, p = corrected_p_fdr_discr_all, m_better = ifelse(corrected_p_fdr_discr_all < 0.05, ifelse(obs$discr_diff > 0, 1, -1), 0))

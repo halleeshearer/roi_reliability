@@ -1,7 +1,7 @@
 %%%% CALCULATE THE ICC FOR ONE ROI
 
 % select ROI (dlpfc, tpj, or pre_sma)
-roi = 'dlpfc';
+roi = 'tpj';
 
 % read in the rearranged matrix for the selected ROI
 % the rearranged matrix has the rows as the subjects and runs, and the columns as the edges
@@ -37,7 +37,7 @@ idx = 1;
 % loop through all of the edges, calculate the ICC for the movie and rest conditions, and calculate the difference
 for i = 1:nEdges
     % print progress update:
-    if mod(i, 100) == 0
+    if mod(i, 10000) == 0
         disp(i)
     end
     v1m = mat((session==1 & (cond == "M")), i); % get the values for the first visit and movie condition
@@ -46,8 +46,8 @@ for i = 1:nEdges
     v2r = mat((session==2 & (cond == "R")), i); % get the values for the second visit and rest condition
     vm = cat(2,v1m, v2m); % concatenate the movie values
     vr = cat(2,v1r, v2r); % concatenate the rest values
-    result_m = icc(vm, "1-1"); % calculate the ICC for the movie condition
-    result_r = icc(vr, "1-1"); % calculate the ICC for the rest condition
+    result_m = icc(vm, "A-1"); % calculate the ICC for the movie condition
+    result_r = icc(vr, "A-1"); % calculate the ICC for the rest condition
     result_diff = result_m - result_r; % calculate the difference between Movie and Rest ICCs
     new_row = {i, result_m, result_r, result_diff}; % store the results in a new row
     results(idx,:) = new_row; % store the new row in the results array
@@ -58,13 +58,13 @@ end
 results = cell2table(results, 'VariableNames', {'edge', 'icc_m', 'icc_r', 'icc_diff'});
 
 % save results as csv
-writetable(results, append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/icc_results_', roi, '.csv'));
+writetable(results, append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/icc_2_1_results_', roi, '.csv'));
 
 
 
 %%%% PERMUTATION TESTING FOR ICC
 % This is permutation testing for comparing the mean ICC between movie and rest in this ROI, not comparing at every edge
-roi = 'dlpfc';
+roi = 'tpj';
 mat = readmatrix(append('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_roi_', roi, '.csv'));
 session = readmatrix('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_visit_roi_dlpfc.csv');
 cond = readtable('/scratch/st-tv01-1/hcp/reliability/rearranged_matrices/matlab_condition_roi_dlpfc.csv', 'ReadVariableNames', false);
@@ -73,12 +73,12 @@ cond = categorical(cond);
 [nRows, nEdges] = size(mat);
 
 % load the observed differences between movie and rest ICCs (calculated in the previous section)
-observed_diffs = readtable(append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/icc_results_', roi, '.csv'));
+observed_diffs = readtable(append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/icc_2_1_results_', roi, '.csv'));
 % calculate the observed difference in mean ICC between movie and rest
 observed_diff = mean(observed_diffs(:,2)).icc_m - mean(observed_diffs(:,3)).icc_r; 
 
 % set the number of permutations (I used 500 for the TPJ and pre-SMA, but the DLPFC has so many edges that I tried 100 and that didn't even work)
-nPerms = 100; % ideally larger than 100 if possible!
+nPerms = 500; % ideally larger than 100 if possible!
 
 % ignore this for now, this was for edge-wise permutation testing
 % p_vals = zeros(nEdges,2);
@@ -92,9 +92,9 @@ all_results = zeros(nEdges, nPerms);
 
 
 tic
-for i = 1:nEdges % loop through all of the edges with parallel processing
+parfor i = 1:nEdges % loop through all of the edges with parallel processing
     % display an update of progress
-    if mod(i, 1000) == 0
+    if mod(i, 500) == 0
         disp(i)
     end
     idx = 1;
@@ -107,8 +107,8 @@ for i = 1:nEdges % loop through all of the edges with parallel processing
         v2r = mat((session==2 & (cond_labels == "R")'), i); % get the values for the second visit and rest condition
         vm = cat(2,v1m, v2m); % concatenate the movie values
         vr = cat(2,v1r, v2r); % concatenate the rest values
-        result_m = icc(vm, "1-1"); % calculate the ICC for the movie condition
-        result_r = icc(vr, "1-1"); % calculate the ICC for the rest condition
+        result_m = icc(vm, "A-1"); % calculate the ICC for the movie condition
+        result_r = icc(vr, "A-1"); % calculate the ICC for the rest condition
         result_diff = result_m - result_r; % calculate the difference between Movie and Rest ICCs
         new_row = {p, i, result_m, result_r, result_diff}; % store the results in a new row
         results_local(idx,:) = new_row; % store the new row in the results array for this edge
@@ -126,13 +126,13 @@ mean_diff = mean(all_results,1); % mean ICC difference for each permutation (mea
 % calculate p-value
 p_val = sum(abs(mean_diff) > abs(observed_diff))/nPerms % p-value (proportion of permutations with a mean ICC difference greater than the observed difference
 
-
+p_val
 
 % for edge-wise, ignore for now...
 % writematrix(p_vals, append('/scratch/st-tv01-1/hcp/reliability/redo_icc_p_vals_three_rois_', roi, '.csv'))
 
 % save all_results as csv
-writematrix(all_results, append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/redo_icc_perms_', roi, '.csv'));
+writematrix(all_results, append('/scratch/st-tv01-1/hcp/reliability/results/three_rois/icc_2_1_perms_', roi, '.csv'));
 
 % rewrite the above function looping through the permutations first, then the edges
 % this will allow us to parallelize the permutation testing

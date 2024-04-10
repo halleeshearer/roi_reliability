@@ -1,13 +1,26 @@
 ### INSTRUCTIONS
 This folder contains the scripts and functions necessary to reproduce the whole-brain analysis comparing the test-retest reliability of Movie to Rest FC data for each region of the Glasser atlas (including subcortical ROIs)
 
-*Step 1.* create matrices for each ROI, subject, and run (create_matrices_all_rois.py)
+1. create_matrices/create_matrices_all_rois.py
+- create matrices for each ROI, subject, and run
 
-*Step 2.* rearrange those matrices to adhere to ReX input requirements (rearrange_matrices.R)
+2. rearrange_matrices/rearrange_matrices.R
+- rearrange those matrices to adhere to ReX input requirements
 
-*Step 3.* calculate multivariate reliability (i2c2, fingerprinting, discriminability) for each roi and condition (calculate_mv.R)
+3. distance_matrices/create_dist_matrices.m
+- takes rearranged matrices and creates distance matrices
 
-*Step 4.* calculate statistics (TODO)
+4. multivariate_reliability/calculate_mv.R
+- takes distance matrices and calculates multivariate reliability (I2C2, fingerprinting, discriminability) for each ROI and condition
+- uses ReX (Xu et al., 2023)
 
-### NOTES
-- larger ROIs (i.e. V1, primary motor) have trouble with step 3, and likely will with step 4 too. As of Jan 29, 2024 
+5. permutation_tests/create_condition_permutations.R
+- creates many permuted lists of condition labels by shuffling condition labels for each subject with a 50% probability
+
+6. permutation_tests/roi_permutation_testing.R
+- takes permuted condition labels and creates null distributions for each ROI
+
+7. permutation_tests/roi_p_values.R
+- takes null distributions and observed differences between conditions and calculates p-values
+- TODO: clean up
+

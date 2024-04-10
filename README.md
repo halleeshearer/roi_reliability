@@ -1,4 +1,4 @@
-# Movie-fMRI as an acquisition state for FC-based precision psychiatry
+# Comparing reliability of functional connectivity between movie and rest in psychiatric regions of interest
 
 ### Scripts from the original submission of the manuscript (and my M.Sc thesis) are in the old_scripts directory
 
